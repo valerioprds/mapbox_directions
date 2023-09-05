@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { environment } from 'enviroments/environment';
 import * as mapboxgl from 'mapbox-gl';
-import * as MapboxDirections from '@mapbox/mapbox-gl-directions';
+import * as MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 
 @Component({
   selector: 'app-root',
@@ -38,6 +38,20 @@ export class AppComponent implements OnInit {
       showUserHeading: true,
     });
 
+    const directions = new MapboxDirections({
+      unit: 'metric',
+      profile: 'mapbox/driving',
+      container: 'directions',
+      bearing: true,
+      steps: true,
+      voice_instructions: true,
+      controls: {
+        inputs: true,
+        instructions: true,
+        profileSwitcher: true,
+      },
+    });
+
     this.map = new mapboxgl.Map({
       container: 'map',
       style: this.style,
@@ -46,14 +60,28 @@ export class AppComponent implements OnInit {
       attributionControl: false,
     });
 
+    this.map.addControl(directions, 'top-left');
+
     this.map.addControl(navControl, 'top-right');
 
     this.map.addControl(geolocate, 'top-right');
 
-    geolocate.on('geolocate', locateUser);
     this.map.on('load', function () {
       geolocate.trigger();
     });
+
+/*     this.map.on('load', function () {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+          directions.setOrigin([
+            position.coords.longitude,
+            position.coords.latitude,
+          ]);
+        });
+      }
+    }); */
+
+    geolocate.on('geolocate', locateUser);
 
     // scaling control:
     this.map.addControl(new mapboxgl.ScaleControl(), 'bottom-right');
